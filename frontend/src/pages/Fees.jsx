@@ -7,11 +7,13 @@ function Fees() {
   const [fees, setFees] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [editingFee, setEditingFee] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0, limit: 10 });
 
   const fetchStudents = async () => {
     try {
-      const res = await api.get("/students");
-      setStudents(res.data);
+      const res = await api.get("/students", { params: { page: 1, limit: 1000 } });
+      setStudents(res.data.data || []);
     } catch (error) {
       console.error(error);
     }
@@ -19,8 +21,9 @@ function Fees() {
 
   const fetchFees = async () => {
     try {
-      const res = await api.get("/fees", { params: { status: statusFilter } });
-      setFees(res.data);
+      const res = await api.get("/fees", { params: { status: statusFilter, page, limit: 10 } });
+      setFees(res.data.data || []);
+      setPagination(res.data.pagination || { page: 1, totalPages: 1, total: 0, limit: 10 });
     } catch (error) {
       console.error(error);
     }
@@ -32,6 +35,10 @@ function Fees() {
 
   useEffect(() => {
     fetchFees();
+  }, [statusFilter, page]);
+
+  useEffect(() => {
+    setPage(1);
   }, [statusFilter]);
 
   const handleCreateOrUpdate = async (formData) => {
@@ -49,6 +56,11 @@ function Fees() {
         await api.post("/fees", payload);
       }
 
+      if (page !== 1) {
+        setPage(1);
+        return;
+      }
+
       fetchFees();
     } catch (error) {
       alert(error.response?.data?.message || "Something went wrong");
@@ -59,6 +71,12 @@ function Fees() {
     if (!window.confirm("Delete this fee record?")) return;
     try {
       await api.delete(`/fees/${id}`);
+
+      if (fees.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+        return;
+      }
+
       fetchFees();
     } catch (error) {
       console.error(error);
@@ -126,6 +144,26 @@ function Fees() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="pagination-row">
+          <button
+            className="btn secondary"
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={pagination.page <= 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {pagination.page} of {pagination.totalPages} | Total: {pagination.total}
+          </span>
+          <button
+            className="btn secondary"
+            onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages || 1))}
+            disabled={pagination.page >= pagination.totalPages}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

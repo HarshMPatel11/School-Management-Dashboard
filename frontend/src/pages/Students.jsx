@@ -8,13 +8,16 @@ function Students() {
   const [search, setSearch] = useState("");
   const [className, setClassName] = useState("");
   const [section, setSection] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0, limit: 10 });
 
   const fetchStudents = async () => {
     try {
       const res = await api.get("/students", {
-        params: { search, className, section },
+        params: { search, className, section, page, limit: 10 },
       });
-      setStudents(res.data);
+      setStudents(res.data.data || []);
+      setPagination(res.data.pagination || { page: 1, totalPages: 1, total: 0, limit: 10 });
     } catch (error) {
       console.error(error);
     }
@@ -22,6 +25,10 @@ function Students() {
 
   useEffect(() => {
     fetchStudents();
+  }, [search, className, section, page]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, className, section]);
 
   const handleCreateOrUpdate = async (formData) => {
@@ -32,6 +39,12 @@ function Students() {
       } else {
         await api.post("/students", formData);
       }
+
+      if (page !== 1) {
+        setPage(1);
+        return;
+      }
+
       fetchStudents();
     } catch (error) {
       alert(error.response?.data?.message || "Something went wrong");
@@ -42,6 +55,12 @@ function Students() {
     if (!window.confirm("Delete this student?")) return;
     try {
       await api.delete(`/students/${id}`);
+
+      if (students.length === 1 && page > 1) {
+        setPage((prev) => prev - 1);
+        return;
+      }
+
       fetchStudents();
     } catch (error) {
       console.error(error);
@@ -115,6 +134,26 @@ function Students() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="pagination-row">
+          <button
+            className="btn secondary"
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={pagination.page <= 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {pagination.page} of {pagination.totalPages} | Total: {pagination.total}
+          </span>
+          <button
+            className="btn secondary"
+            onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages || 1))}
+            disabled={pagination.page >= pagination.totalPages}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

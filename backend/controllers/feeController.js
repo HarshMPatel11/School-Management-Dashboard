@@ -29,15 +29,32 @@ exports.createFee = async (req, res) => {
 
 exports.getFees = async (req, res) => {
   try {
-    const { status = "" } = req.query;
+    const { status = "", page = 1, limit = 10 } = req.query;
     const query = {};
     if (status) query.paymentStatus = status;
 
-    const fees = await Fee.find(query)
-      .populate("student")
-      .sort({ createdAt: -1 });
+    const pageNumber = Math.max(Number(page) || 1, 1);
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100);
+    const skip = (pageNumber - 1) * pageSize;
 
-    res.json(fees);
+    const [fees, total] = await Promise.all([
+      Fee.find(query)
+        .populate("student")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageSize),
+      Fee.countDocuments(query),
+    ]);
+
+    res.json({
+      data: fees,
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

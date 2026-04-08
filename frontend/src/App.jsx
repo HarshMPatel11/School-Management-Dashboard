@@ -15,6 +15,7 @@ function App() {
         <Route path="/students" element={<Students />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/fees" element={<Fees />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>
   );

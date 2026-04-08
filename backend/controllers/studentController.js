@@ -13,7 +13,7 @@ exports.createStudent = async (req, res) => {
 
 exports.getStudents = async (req, res) => {
   try {
-    const { search = "", className = "", section = "" } = req.query;
+    const { search = "", className = "", section = "", page = 1, limit = 10 } = req.query;
 
     const query = {};
 
@@ -28,8 +28,24 @@ exports.getStudents = async (req, res) => {
     if (className) query.className = className;
     if (section) query.section = section;
 
-    const students = await Student.find(query).sort({ createdAt: -1 });
-    res.json(students);
+    const pageNumber = Math.max(Number(page) || 1, 1);
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100);
+    const skip = (pageNumber - 1) * pageSize;
+
+    const [students, total] = await Promise.all([
+      Student.find(query).sort({ createdAt: -1 }).skip(skip).limit(pageSize),
+      Student.countDocuments(query),
+    ]);
+
+    res.json({
+      data: students,
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

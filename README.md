@@ -4,10 +4,14 @@ A full-stack school administration dashboard built with MongoDB, Express, React,
 
 ## Features
 
+- JWT-based login and admin authentication
+- Role-based access control (admin, staff)
 - Student CRUD (add, edit, delete)
 - Student search and class/section filters
 - Attendance marking and date-wise filtering
 - Fee records with payment status (Paid, Partial, Unpaid)
+- Pagination on student, attendance and fee listings
+- Dark mode toggle
 - Dashboard summary cards
 - Responsive UI
 
@@ -83,7 +87,14 @@ Backend .env:
 ```env
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/school_management_dashboard
+JWT_SECRET=your_strong_secret
+JWT_EXPIRES_IN=1d
+ADMIN_NAME=School Admin
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
 ```
+
+When backend starts, the default admin user is created automatically if it does not already exist.
 
 ## Resume Description
 
