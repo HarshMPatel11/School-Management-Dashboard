@@ -1,4 +1,4 @@
-# School Management Dashboard (MERN)
+# School Management Dashboard (MERN STACK)
 
 A full-stack school administration dashboard built with MongoDB, Express, React, and Node.js.
 
