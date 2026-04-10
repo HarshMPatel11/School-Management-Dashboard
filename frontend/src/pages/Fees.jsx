@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import FeeForm from "../components/FeeForm";
+import { useToast } from "../context/ToastContext";
 
 function Fees() {
+  const { showToast, showConfirm } = useToast();
   const [students, setStudents] = useState([]);
   const [fees, setFees] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
@@ -61,16 +63,19 @@ function Fees() {
         return;
       }
 
+      showToast(editingFee ? "Fee record updated" : "Fee record added", "success");
       fetchFees();
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong");
+      showToast(error.response?.data?.message || "Something went wrong", "error");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this fee record?")) return;
+    const confirmed = await showConfirm("This will permanently delete this fee record.");
+    if (!confirmed) return;
     try {
       await api.delete(`/fees/${id}`);
+      showToast("Fee record deleted", "success");
 
       if (fees.length === 1 && page > 1) {
         setPage((prev) => prev - 1);

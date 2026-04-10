@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import AttendanceForm from "../components/AttendanceForm";
+import { useToast } from "../context/ToastContext";
 
 function Attendance() {
+  const { showToast } = useToast();
   const [students, setStudents] = useState([]);
   const [records, setRecords] = useState([]);
   const [dateFilter, setDateFilter] = useState("");
@@ -51,9 +53,10 @@ function Attendance() {
         return;
       }
 
+      showToast("Attendance saved successfully", "success");
       fetchAttendance();
     } catch (error) {
-      alert(error.response?.data?.message || "Could not save attendance");
+      showToast(error.response?.data?.message || "Could not save attendance", "error");
     }
   };
 

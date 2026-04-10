@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import StudentForm from "../components/StudentForm";
+import { useToast } from "../context/ToastContext";
 
 function Students() {
+  const { showToast, showConfirm } = useToast();
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
   const [search, setSearch] = useState("");
@@ -36,8 +38,10 @@ function Students() {
       if (editingStudent) {
         await api.put(`/students/${editingStudent._id}`, formData);
         setEditingStudent(null);
+        showToast("Student updated successfully", "success");
       } else {
         await api.post("/students", formData);
+        showToast("Student added successfully", "success");
       }
 
       if (page !== 1) {
@@ -47,14 +51,16 @@ function Students() {
 
       fetchStudents();
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong");
+      showToast(error.response?.data?.message || "Something went wrong", "error");
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this student?")) return;
+    const confirmed = await showConfirm("This will permanently delete the student and all related records.");
+    if (!confirmed) return;
     try {
       await api.delete(`/students/${id}`);
+      showToast("Student deleted successfully", "success");
 
       if (students.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
@@ -63,7 +69,7 @@ function Students() {
 
       fetchStudents();
     } catch (error) {
-      console.error(error);
+      showToast("Failed to delete student", "error");
     }
   };
 
