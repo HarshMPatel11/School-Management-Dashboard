@@ -48,8 +48,8 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [token]);
 
-  const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email, password });
+  const login = async ({ identifier, password, role }) => {
+    const res = await api.post("/auth/login", { identifier, password, role });
     setToken(res.data.token);
     setUser(res.data.user);
   };

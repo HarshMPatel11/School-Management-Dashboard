@@ -14,6 +14,7 @@ const initialState = {
 
 function StudentForm({ onSubmit, editingStudent, onCancel }) {
   const [form, setForm] = useState(initialState);
+  const [photoFile, setPhotoFile] = useState(null);
 
   useEffect(() => {
     if (editingStudent) {
@@ -31,6 +32,7 @@ function StudentForm({ onSubmit, editingStudent, onCancel }) {
     } else {
       setForm(initialState);
     }
+    setPhotoFile(null);
   }, [editingStudent]);
 
   const handleChange = (e) => {
@@ -40,12 +42,15 @@ function StudentForm({ onSubmit, editingStudent, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(form);
-    if (!editingStudent) setForm(initialState);
+    onSubmit(form, photoFile);
+    if (!editingStudent) {
+      setForm(initialState);
+      setPhotoFile(null);
+    }
   };
 
   return (
-    <form className="card form-grid" onSubmit={handleSubmit}>
+    <form className="card student-form" onSubmit={handleSubmit}>
       <div className="form-header-row">
         <h3>{editingStudent ? "Edit Student" : "Add Student"}</h3>
         {editingStudent && (
@@ -55,7 +60,7 @@ function StudentForm({ onSubmit, editingStudent, onCancel }) {
         )}
       </div>
 
-      <div className="grid two-col">
+      <div className="student-fields-grid">
         <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} required />
         <input name="rollNumber" placeholder="Roll Number" value={form.rollNumber} onChange={handleChange} required />
         <input name="className" placeholder="Class" value={form.className} onChange={handleChange} required />
@@ -68,13 +73,30 @@ function StudentForm({ onSubmit, editingStudent, onCancel }) {
         <input name="parentName" placeholder="Parent Name" value={form.parentName} onChange={handleChange} />
         <input name="contactNumber" placeholder="Contact Number" value={form.contactNumber} onChange={handleChange} />
         <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+
+        <div className="student-field student-field--full">
+          <textarea name="address" placeholder="Address" value={form.address} onChange={handleChange} rows="3" />
+        </div>
+
+        <div className="student-field student-field--full student-photo-field">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+          />
+          <small className="field-hint">Photo (optional) - max 100KB</small>
+          {photoFile ? <small className="field-hint">Selected: {photoFile.name}</small> : null}
+          {editingStudent?.photoUrl && !photoFile ? (
+            <small className="field-hint">Current photo already uploaded</small>
+          ) : null}
+        </div>
       </div>
 
-      <textarea name="address" placeholder="Address" value={form.address} onChange={handleChange} rows="3" />
-
-      <button className="btn primary" type="submit">
-        {editingStudent ? "Update Student" : "Add Student"}
-      </button>
+      <div className="student-form-actions">
+        <button className="btn primary" type="submit">
+          {editingStudent ? "Update Student" : "Add Student"}
+        </button>
+      </div>
     </form>
   );
 }

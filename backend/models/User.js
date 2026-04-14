@@ -8,10 +8,17 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      lowercase: true,
+    },
     email: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
       trim: true,
       lowercase: true,
     },
@@ -22,8 +29,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "staff"],
-      default: "staff",
+      enum: ["admin", "staff", "employee", "student"],
+      default: "employee",
     },
   },
   { timestamps: true }

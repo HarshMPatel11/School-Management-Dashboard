@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
@@ -7,7 +7,7 @@ function Login() {
   const location = useLocation();
   const { login } = useAuth();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ identifier: "", password: "", role: "admin" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -24,7 +24,7 @@ function Login() {
     setSubmitting(true);
 
     try {
-      await login(form.email, form.password);
+      await login(form);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
@@ -36,16 +36,40 @@ function Login() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>Admin Login</h2>
-        <p>Sign in to access the school dashboard</p>
+        <h2>Login</h2>
+        <p>Select your role and sign in</p>
+
+        <div className="role-switcher" role="tablist" aria-label="Choose login role">
+          <button
+            type="button"
+            className={`role-pill ${form.role === "admin" ? "active" : ""}`}
+            onClick={() => setForm((prev) => ({ ...prev, role: "admin" }))}
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            className={`role-pill ${form.role === "employee" ? "active" : ""}`}
+            onClick={() => setForm((prev) => ({ ...prev, role: "employee" }))}
+          >
+            Employee
+          </button>
+          <button
+            type="button"
+            className={`role-pill ${form.role === "student" ? "active" : ""}`}
+            onClick={() => setForm((prev) => ({ ...prev, role: "student" }))}
+          >
+            Student
+          </button>
+        </div>
 
         {error && <div className="auth-error">{error}</div>}
 
         <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
+          name="identifier"
+          type="text"
+          placeholder={form.role === "admin" ? "Admin Email" : form.role === "employee" ? "Employee Mobile" : "Student Roll Number"}
+          value={form.identifier}
           onChange={handleChange}
           required
         />
@@ -58,9 +82,21 @@ function Login() {
           required
         />
 
+        <small className="field-hint">
+          {form.role === "admin"
+            ? "Admin uses email + password"
+            : form.role === "employee"
+              ? "Employee default: mobile as login ID and password"
+              : "Student default: roll number as login ID and password"}
+        </small>
+
         <button className="btn primary" type="submit" disabled={submitting}>
           {submitting ? "Signing in..." : "Login"}
         </button>
+
+        <p className="auth-alt-link">
+          Don't have an account? <Link to="/signup">Sign Up</Link>
+        </p>
       </form>
     </div>
   );

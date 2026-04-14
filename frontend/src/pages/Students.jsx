@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import StudentForm from "../components/StudentForm";
 import { useToast } from "../context/ToastContext";
 
 function Students() {
+  const navigate = useNavigate();
   const { showToast, showConfirm } = useToast();
   const [students, setStudents] = useState([]);
-  const [editingStudent, setEditingStudent] = useState(null);
   const [search, setSearch] = useState("");
   const [className, setClassName] = useState("");
   const [section, setSection] = useState("");
@@ -33,28 +33,6 @@ function Students() {
     setPage(1);
   }, [search, className, section]);
 
-  const handleCreateOrUpdate = async (formData) => {
-    try {
-      if (editingStudent) {
-        await api.put(`/students/${editingStudent._id}`, formData);
-        setEditingStudent(null);
-        showToast("Student updated successfully", "success");
-      } else {
-        await api.post("/students", formData);
-        showToast("Student added successfully", "success");
-      }
-
-      if (page !== 1) {
-        setPage(1);
-        return;
-      }
-
-      fetchStudents();
-    } catch (error) {
-      showToast(error.response?.data?.message || "Something went wrong", "error");
-    }
-  };
-
   const handleDelete = async (id) => {
     const confirmed = await showConfirm("This will permanently delete the student and all related records.");
     if (!confirmed) return;
@@ -74,14 +52,16 @@ function Students() {
   };
 
   return (
-    <div className="page-grid">
-      <StudentForm
-        onSubmit={handleCreateOrUpdate}
-        editingStudent={editingStudent}
-        onCancel={() => setEditingStudent(null)}
-      />
-
+    <div className="page-container">
       <div className="card">
+        <div className="page-header" style={{ marginBottom: 14 }}>
+          <div>
+            <h2 className="page-title">All Students</h2>
+            <p className="page-subtitle">Manage student records and class roster.</p>
+          </div>
+          <button className="btn primary" onClick={() => navigate("/students/new")}>Add New</button>
+        </div>
+
         <div className="toolbar">
           <input
             placeholder="Search by name, roll no, parent"
@@ -131,7 +111,8 @@ function Students() {
                     <td>{student.contactNumber}</td>
                     <td>
                       <div className="action-buttons">
-                        <button className="btn warning" onClick={() => setEditingStudent(student)}>Edit</button>
+                        <button className="btn secondary" onClick={() => navigate(`/students/admission-letter/${student._id}`)}>Letter</button>
+                        <button className="btn warning" onClick={() => navigate(`/students/edit/${student._id}`)}>Edit</button>
                         <button className="btn danger" onClick={() => handleDelete(student._id)}>Delete</button>
                       </div>
                     </td>

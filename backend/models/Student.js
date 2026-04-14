@@ -48,6 +48,22 @@ const studentSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    photoUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    loginUsername: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
+    loginPassword: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   { timestamps: true }
 );
