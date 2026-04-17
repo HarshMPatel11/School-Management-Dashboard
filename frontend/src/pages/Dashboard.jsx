@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -12,7 +10,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 
@@ -134,6 +131,39 @@ function Dashboard() {
     day: "numeric",
     year: "numeric",
   });
+  const totalFeeTarget = feesData.collected + feesData.due;
+  const collectionPercent =
+    totalFeeTarget > 0 ? (feesData.collected / totalFeeTarget) * 100 : 0;
+  const statCards = [
+    {
+      title: "Total Students",
+      value: stats.totalStudents,
+      detail: "Active learners across all classes",
+      accentClass: "stat-card--indigo",
+      eyebrow: "Enrollment",
+    },
+    {
+      title: "Attendance Marked",
+      value: stats.todayAttendanceMarked,
+      detail: `${unmarkedCount} students still pending for today`,
+      accentClass: "stat-card--violet",
+      eyebrow: "Attendance",
+    },
+    {
+      title: "Fees Collected",
+      value: `Rs ${feesData.collected.toLocaleString()}`,
+      detail: `${feesData.paid} students fully paid`,
+      accentClass: "stat-card--rose",
+      eyebrow: "Cash Flow",
+    },
+    {
+      title: "Total Due",
+      value: `Rs ${feesData.due.toLocaleString()}`,
+      detail: `${feesData.unpaid} accounts still unpaid`,
+      accentClass: "stat-card--sky",
+      eyebrow: "Outstanding",
+    },
+  ];
 
   const renderStudentList = (students, emptyText) => {
     if (loading) {
@@ -173,141 +203,159 @@ function Dashboard() {
         <div className="hero-date-chip">{todayDateLabel}</div>
       </section>
 
-      <section className="cards-grid dashboard-cards">
-        <div className="stat-card stat-card--indigo">
-          <h4>Total Students</h4>
-          <p>{stats.totalStudents}</p>
+      <section className="dashboard-section">
+        <div className="section-heading">
+          <div>
+            <p className="section-kicker">Quick Snapshot</p>
+            <h2 className="section-title">Live metrics for today</h2>
+          </div>
+          <p className="section-copy">High-level numbers for attendance, enrollment and fee movement.</p>
         </div>
-        <div className="stat-card stat-card--violet">
-          <h4>Attendance Marked Today</h4>
-          <p>{stats.todayAttendanceMarked}</p>
-        </div>
-        <div className="stat-card stat-card--rose">
-          <h4>Fees Collected</h4>
-          <p>Rs {feesData.collected.toLocaleString()}</p>
-        </div>
-        <div className="stat-card stat-card--sky">
-          <h4>Total Due</h4>
-          <p>Rs {feesData.due.toLocaleString()}</p>
+
+        <div className="cards-grid dashboard-cards">
+          {statCards.map((card) => (
+            <article key={card.title} className={`stat-card dashboard-stat-card ${card.accentClass}`}>
+              <div className="stat-card-topline">
+                <span className="stat-eyebrow">{card.eyebrow}</span>
+              </div>
+              <h4>{card.title}</h4>
+              <p>{card.value}</p>
+              <span className="stat-detail">{card.detail}</span>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="dashboard-bottom-grid">
-        <article className="card today-panel present-panel">
-          <div className="panel-header">
-            <h3>Today Present Students</h3>
-            <span className="pill pill-success">{presentStudents.length}</span>
+      <section className="dashboard-section dashboard-section--insights">
+        <div className="section-heading section-heading--split">
+          <div>
+            <p className="section-kicker">Detailed Insights</p>
+            <h2 className="section-title">Attendance and fee analysis</h2>
           </div>
-          {renderStudentList(
-            presentStudents,
-            "No students marked present yet for today."
-          )}
-        </article>
+          <p className="section-copy">This area is more detailed, so the cards are designed like working panels instead of summary tiles.</p>
+        </div>
 
-        <article className="card today-panel absent-panel">
-          <div className="panel-header">
-            <h3>Today Absent Students</h3>
-            <span className="pill pill-danger">{absentStudents.length}</span>
-          </div>
-          {renderStudentList(absentStudents, "No students marked absent today.")}
-          <p className="helper-note">Not marked yet: {unmarkedCount}</p>
-        </article>
-      </section>
-
-      <section className="charts-grid">
-        <article className="card chart-card">
-          <div className="card-header">
-            <h3>Fees Collections This Month</h3>
-          </div>
-          <div className="chart-wrapper pie-chart-wrapper">
-            {feesPieData.some((d) => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <PieChart>
-                  <Pie
-                    data={feesPieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: Rs ${value.toLocaleString()}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {feesPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `Rs ${value.toLocaleString()}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="dashboard-empty">No fees data available</p>
+        <div className="dashboard-bottom-grid">
+          <article className="card today-panel present-panel">
+            <div className="panel-header">
+              <div>
+                <span className="panel-kicker">Attendance Board</span>
+                <h3>Today Present Students</h3>
+              </div>
+              <span className="pill pill-success">{presentStudents.length}</span>
+            </div>
+            {renderStudentList(
+              presentStudents,
+              "No students marked present yet for today."
             )}
-          </div>
-        </article>
+          </article>
 
-        <article className="card chart-card">
-          <div className="card-header">
-            <h3>Payment Status Breakdown</h3>
-          </div>
-          <div className="chart-wrapper">
-            {paymentStatusChart.some((d) => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={paymentStatusChart}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="dashboard-empty">No payment data available</p>
-            )}
-          </div>
-        </article>
+          <article className="card today-panel absent-panel">
+            <div className="panel-header">
+              <div>
+                <span className="panel-kicker">Attendance Board</span>
+                <h3>Today Absent Students</h3>
+              </div>
+              <span className="pill pill-danger">{absentStudents.length}</span>
+            </div>
+            {renderStudentList(absentStudents, "No students marked absent today.")}
+            <p className="helper-note">Not marked yet: {unmarkedCount}</p>
+          </article>
+        </div>
 
-        <article className="card chart-card fees-summary-card">
-          <div className="card-header">
-            <h3>Fee Summary</h3>
-          </div>
-          <div className="fee-summary-grid">
-            <div className="fee-summary-item">
-              <p className="fee-label">Collections</p>
-              <p className="fee-amount collections">Rs {feesData.collected.toLocaleString()}</p>
-              <p className="fee-meta">{feesData.paid} Paid</p>
+        <section className="charts-grid">
+          <article className="card chart-card chart-card--collections">
+            <div className="card-header">
+              <div>
+                <span className="panel-kicker">Finance View</span>
+                <h3>Fees Collections This Month</h3>
+              </div>
+              <span className="chart-badge chart-badge--success">{collectionPercent.toFixed(1)}%</span>
             </div>
-            <div className="fee-divider"></div>
-            <div className="fee-summary-item">
-              <p className="fee-label">Remaining</p>
-              <p className="fee-amount remaining">Rs {feesData.due.toLocaleString()}</p>
-              <p className="fee-meta">{feesData.unpaid} Unpaid</p>
+            <div className="chart-wrapper pie-chart-wrapper">
+              {feesPieData.some((d) => d.value > 0) ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={feesPieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: Rs ${value.toLocaleString()}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {feesPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `Rs ${value.toLocaleString()}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="dashboard-empty">No fees data available</p>
+              )}
             </div>
-          </div>
-          <div className="fee-progress-container">
-            <div className="progress-bar-bg">
-              <div
-                className="progress-bar-fill"
-                style={{
-                  width: `${
-                    feesData.collected + feesData.due > 0
-                      ? (feesData.collected / (feesData.collected + feesData.due)) * 100
-                      : 0
-                  }%`,
-                }}
-              ></div>
+          </article>
+
+          <article className="card chart-card chart-card--status">
+            <div className="card-header">
+              <div>
+                <span className="panel-kicker">Finance View</span>
+                <h3>Payment Status Breakdown</h3>
+              </div>
+              <span className="chart-badge chart-badge--warning">{feesData.partial} Partial</span>
             </div>
-            <p className="progress-label">
-              {feesData.collected + feesData.due > 0
-                ? (
-                    (feesData.collected / (feesData.collected + feesData.due)) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              % Collected
-            </p>
-          </div>
-        </article>
+            <div className="chart-wrapper">
+              {paymentStatusChart.some((d) => d.value > 0) ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={paymentStatusChart}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#3b82f6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="dashboard-empty">No payment data available</p>
+              )}
+            </div>
+          </article>
+
+          <article className="card chart-card fees-summary-card chart-card--summary">
+            <div className="card-header">
+              <div>
+                <span className="panel-kicker">Collection Health</span>
+                <h3>Fee Summary</h3>
+              </div>
+              <span className="chart-badge chart-badge--neutral">{feesData.unpaid} Open</span>
+            </div>
+            <div className="fee-summary-grid">
+              <div className="fee-summary-item">
+                <p className="fee-label">Collections</p>
+                <p className="fee-amount collections">Rs {feesData.collected.toLocaleString()}</p>
+                <p className="fee-meta">{feesData.paid} Paid</p>
+              </div>
+              <div className="fee-divider"></div>
+              <div className="fee-summary-item">
+                <p className="fee-label">Remaining</p>
+                <p className="fee-amount remaining">Rs {feesData.due.toLocaleString()}</p>
+                <p className="fee-meta">{feesData.unpaid} Unpaid</p>
+              </div>
+            </div>
+            <div className="fee-progress-container">
+              <div className="progress-bar-bg">
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${collectionPercent}%` }}
+                ></div>
+              </div>
+              <p className="progress-label">{collectionPercent.toFixed(1)}% Collected</p>
+            </div>
+          </article>
+        </section>
       </section>
     </div>
   );

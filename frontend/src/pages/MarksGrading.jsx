@@ -143,23 +143,6 @@ function MarksGrading() {
         </div>
       </div>
 
-      <style jsx>{`
-        .grading-input,
-        .grading-select {
-          width: 100%;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-size: 14px;
-        }
-
-        .grading-input:focus,
-        .grading-select:focus {
-          outline: none;
-          border-color: #2563eb;
-          box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
-        }
-      `}</style>
     </div>
   );
 }

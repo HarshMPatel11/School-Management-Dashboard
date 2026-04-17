@@ -64,53 +64,6 @@ function RulesAndRegulation() {
         </div>
       </div>
 
-      <style jsx>{`
-        .editor-toolbar {
-          background: #f5f5f5;
-          border-radius: 4px;
-          padding: 12px;
-          margin-bottom: 12px;
-          display: flex;
-          gap: 12px;
-          align-items: center;
-        }
-
-        .toolbar-group {
-          display: flex;
-          gap: 6px;
-          align-items: center;
-        }
-
-        .toolbar-btn {
-          background: white;
-          border: 1px solid #ddd;
-          padding: 6px 10px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: all 0.2s;
-        }
-
-        .toolbar-btn:hover {
-          background: #e8e8e8;
-          border-color: #999;
-        }
-
-        .toolbar-divider {
-          width: 1px;
-          height: 20px;
-          background: #ddd;
-        }
-
-        .editor-content {
-          width: 100%;
-          padding: 12px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-family: inherit;
-          resize: vertical;
-        }
-      `}</style>
     </div>
   );
 }

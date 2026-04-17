@@ -88,7 +88,7 @@ function NewClass() {
         </button>
       </div>
 
-      <div className="card" style={{ maxWidth: 640 }}>
+      <div className="card" style={{ maxWidth: 640, margin: "0 auto" }}>
         <form onSubmit={handleSubmit}>
           <div className="form-header-row">
             <h3>{isEditing ? "Edit Class" : "Add New Class"}</h3>
