@@ -209,7 +209,6 @@ function Dashboard() {
             <p className="section-kicker">Quick Snapshot</p>
             <h2 className="section-title">Live metrics for today</h2>
           </div>
-          <p className="section-copy">High-level numbers for attendance, enrollment and fee movement.</p>
         </div>
 
         <div className="cards-grid dashboard-cards">
@@ -232,7 +231,6 @@ function Dashboard() {
             <p className="section-kicker">Detailed Insights</p>
             <h2 className="section-title">Attendance and fee analysis</h2>
           </div>
-          <p className="section-copy">This area is more detailed, so the cards are designed like working panels instead of summary tiles.</p>
         </div>
 
         <div className="dashboard-bottom-grid">
