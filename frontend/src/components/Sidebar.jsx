@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -101,7 +101,7 @@ function SettingsIcon() {
   );
 }
 
-function Sidebar() {
+function Sidebar({ isMobileOpen = false, onCloseMobile = () => {} }) {
   const { user } = useAuth();
   const role = user?.role || "";
   const isAdmin = role === "admin";
@@ -134,6 +134,10 @@ function Sidebar() {
   const [reportsOpen, setReportsOpen] = useState(isReportsActive);
   const [settingsOpen, setSettingsOpen] = useState(isGeneralSettingsActive);
 
+  useEffect(() => {
+    onCloseMobile();
+  }, [location.pathname, onCloseMobile]);
+
   const navItems = canAccessOperations
     ? [{ path: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> }]
     : [];
@@ -150,38 +154,55 @@ function Sidebar() {
     ];
 
     return (
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="brand-icon"><SchoolIcon /></div>
-          <div className="brand">Student Portal</div>
-        </div>
-        <nav className="nav-links">
-          {studentNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-link ${(isActive || (isStudentPortalActive && location.pathname === item.path)) ? "active" : ""}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
+      <>
+        <button
+          type="button"
+          className={`sidebar-overlay ${isMobileOpen ? "visible" : ""}`}
+          aria-label="Close menu"
+          onClick={onCloseMobile}
+        />
+        <aside className={`sidebar ${isMobileOpen ? "sidebar-open" : ""}`}>
+          <div className="sidebar-header">
+            <div className="brand-icon"><SchoolIcon /></div>
+            <div className="brand">Student Portal</div>
+          </div>
+          <nav className="nav-links">
+            {studentNavItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onCloseMobile}
+                className={({ isActive }) => `nav-link ${(isActive || (isStudentPortalActive && location.pathname === item.path)) ? "active" : ""}`}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        </aside>
+      </>
     );
   }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="brand-icon"><SchoolIcon /></div>
-        <div className="brand">School Admin</div>
-      </div>
-      <nav className="nav-links">
+    <>
+      <button
+        type="button"
+        className={`sidebar-overlay ${isMobileOpen ? "visible" : ""}`}
+        aria-label="Close menu"
+        onClick={onCloseMobile}
+      />
+      <aside className={`sidebar ${isMobileOpen ? "sidebar-open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="brand-icon"><SchoolIcon /></div>
+          <div className="brand">School Admin</div>
+        </div>
+        <nav className="nav-links">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={onCloseMobile}
             className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
           >
             <span className="nav-icon">{item.icon}</span>
@@ -206,24 +227,28 @@ function Sidebar() {
                 <>
                   <NavLink
                     to="/settings/institute-profile"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Institute Profile
                   </NavLink>
                   <NavLink
                     to="/settings/fees-particular"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Fees Particular
                   </NavLink>
                   <NavLink
                     to="/settings/accounts-for-fees-invoice"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Accounts For Fees Invoice
                   </NavLink>
                   <NavLink
                     to="/settings/marks-grading"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Marks Grading
@@ -233,6 +258,7 @@ function Sidebar() {
               {!isStudent && (
                 <NavLink
                   to="/settings/rules-and-regulation"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Rules & Regulation
@@ -240,6 +266,7 @@ function Sidebar() {
               )}
               <NavLink
                 to="/settings/account-setting"
+                onClick={onCloseMobile}
                 className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
               >
                 Account Setting
@@ -265,6 +292,7 @@ function Sidebar() {
                 <NavLink
                   to="/classes"
                   end
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   All Classes
@@ -272,6 +300,7 @@ function Sidebar() {
                 {isAdmin && (
                   <NavLink
                     to="/classes/new"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     New Class
@@ -298,12 +327,14 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/subjects/classes-with-subjects"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Classes With Subjects
                 </NavLink>
                 <NavLink
                   to="/subjects/assign-subjects"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Assign Subjects
@@ -329,18 +360,21 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/exams/create"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Create New Exam
                 </NavLink>
                 <NavLink
                   to="/exams/marks"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Add / Update Exam Marks
                 </NavLink>
                 <NavLink
                   to="/exams/result-card"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Result Card
@@ -366,18 +400,21 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/reports/report-card"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Students report Card
                 </NavLink>
                 <NavLink
                   to="/reports/students-info"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Students info report
                 </NavLink>
                 <NavLink
                   to="/reports/parents-info"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Parents info report
@@ -403,12 +440,14 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/class-tests/marks"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Manage Test Marks
                 </NavLink>
                 <NavLink
                   to="/class-tests/results"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Test Result
@@ -421,6 +460,7 @@ function Sidebar() {
         {canAccessOperations && (
           <NavLink
             to="/homework"
+            onClick={onCloseMobile}
             className={({ isActive }) => `nav-link ${(isActive || isHomeworkActive) ? "active" : ""}`}
           >
             <span className="nav-icon"><SubjectsIcon /></span>
@@ -445,6 +485,7 @@ function Sidebar() {
                 <NavLink
                   to="/students"
                   end
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   All Students
@@ -452,6 +493,7 @@ function Sidebar() {
                 {isAdmin && (
                   <NavLink
                     to="/students/new"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Add New
@@ -459,12 +501,14 @@ function Sidebar() {
                 )}
                 <NavLink
                   to="/students/id-cards"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Student ID Cards
                 </NavLink>
                 <NavLink
                   to="/students/admission-letter"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Admission Letter
@@ -473,12 +517,14 @@ function Sidebar() {
                   <>
                     <NavLink
                       to="/students/promote"
+                      onClick={onCloseMobile}
                       className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                     >
                       Promote Students
                     </NavLink>
                     <NavLink
                       to="/students/manage-login"
+                      onClick={onCloseMobile}
                       className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                     >
                       Manage Login
@@ -507,24 +553,28 @@ function Sidebar() {
                 <NavLink
                   to="/employees"
                   end
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   All Employees
                 </NavLink>
                 <NavLink
                   to="/employees/new"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Add New
                 </NavLink>
                 <NavLink
                   to="/employees/job-letter"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Job Letter
                 </NavLink>
                 <NavLink
                   to="/employees/manage-login"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Manage Login
@@ -551,18 +601,21 @@ function Sidebar() {
                 <NavLink
                   to="/fees"
                   end
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Generate Fees Invoice
                 </NavLink>
                 <NavLink
                   to="/fees/collect"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Collect Fees
                 </NavLink>
                 <NavLink
                   to="/fees/paid-slip"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Fees Paid Slip
@@ -588,12 +641,14 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/salary/pay"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Pay Salary
                 </NavLink>
                 <NavLink
                   to="/salary/paid-slip"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Salary Paid Slip
@@ -619,6 +674,7 @@ function Sidebar() {
               <div className="nav-sub-links">
                 <NavLink
                   to="/attendance/students"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Students Attendance
@@ -626,6 +682,7 @@ function Sidebar() {
                 {isAdmin && (
                   <NavLink
                     to="/attendance/employees"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Employees Attendance
@@ -633,12 +690,14 @@ function Sidebar() {
                 )}
                 <NavLink
                   to="/attendance/class-report"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Class wise Report
                 </NavLink>
                 <NavLink
                   to="/attendance/student-report"
+                  onClick={onCloseMobile}
                   className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                 >
                   Students Attendance Report
@@ -646,6 +705,7 @@ function Sidebar() {
                 {isAdmin && (
                   <NavLink
                     to="/attendance/employee-report"
+                    onClick={onCloseMobile}
                     className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
                   >
                     Employees Attendance Report
@@ -655,8 +715,9 @@ function Sidebar() {
             )}
           </div>
         )}
-      </nav>
-    </aside>
+        </nav>
+      </aside>
+    </>
   );
 }
 
