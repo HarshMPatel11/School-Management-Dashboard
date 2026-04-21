@@ -195,7 +195,7 @@ function Sidebar({ isMobileOpen = false, onCloseMobile = () => {} }) {
       <aside className={`sidebar ${isMobileOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-header">
           <div className="brand-icon"><SchoolIcon /></div>
-          <div className="brand">School Admin</div>
+          <div className="brand">CampusFlow</div>
         </div>
         <nav className="nav-links">
         {navItems.map((item) => (
