@@ -50,6 +50,10 @@ app.use("/api/salaries", require("./routes/salaryRoutes"));
 app.use("/api/classes", require("./routes/classRoutes"));
 app.use("/api/subjects", require("./routes/subjectRoutes"));
 app.use("/api/employees", require("./routes/employeeRoutes"));
+app.use("/api/exams", require("./routes/examRoutes"));
+app.use("/api/class-tests", require("./routes/classTestRoutes"));
+app.use("/api/homework", require("./routes/homeworkRoutes"));
+app.use("/api/student-portal", require("./routes/studentPortalRoutes"));
 
 app.use((err, req, res, next) => {
   if (err && err.code === "LIMIT_FILE_SIZE") {

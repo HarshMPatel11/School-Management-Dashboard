@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 function Topbar({ theme, onToggleTheme }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const isStudent = user?.role === "student";
 
   const handleLogout = () => {
     logout();
@@ -14,8 +15,8 @@ function Topbar({ theme, onToggleTheme }) {
   return (
     <header className="topbar">
       <div>
-        <h2>School Management Dashboard</h2>
-        <p>Manage students, attendance and fees</p>
+        <h2>{isStudent ? "Student Portal" : "School Management Dashboard"}</h2>
+        <p>{isStudent ? "Track your records, reports and receipts" : "Manage students, attendance and fees"}</p>
       </div>
 
       <div className="topbar-actions">

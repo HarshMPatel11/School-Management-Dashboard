@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getDefaultRouteForRole } from "../utils/roles";
 
 function Login() {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ function Login() {
     setSubmitting(true);
 
     try {
-      await login(form);
-      navigate(from, { replace: true });
+      const loggedInUser = await login(form);
+      navigate(from || getDefaultRouteForRole(loggedInUser?.role), { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

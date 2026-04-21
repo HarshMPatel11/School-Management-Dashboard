@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { uploadStudentPhoto } = require("../middleware/uploadMiddleware");
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 const {
   createStudent,
   getStudents,
@@ -11,12 +12,14 @@ const {
   promoteStudents,
 } = require("../controllers/studentController");
 
-router.get("/stats/summary", getStudentStats);
-router.post("/promote", promoteStudents);
-router.post("/", uploadStudentPhoto.single("photo"), createStudent);
-router.get("/", getStudents);
-router.get("/:id", getStudentById);
-router.put("/:id", uploadStudentPhoto.single("photo"), updateStudent);
-router.delete("/:id", deleteStudent);
+router.use(protect);
+
+router.get("/stats/summary", authorizeRoles("admin", "employee"), getStudentStats);
+router.post("/promote", authorizeRoles("admin"), promoteStudents);
+router.post("/", authorizeRoles("admin"), uploadStudentPhoto.single("photo"), createStudent);
+router.get("/", authorizeRoles("admin", "employee"), getStudents);
+router.get("/:id", authorizeRoles("admin", "employee"), getStudentById);
+router.put("/:id", authorizeRoles("admin"), uploadStudentPhoto.single("photo"), updateStudent);
+router.delete("/:id", authorizeRoles("admin"), deleteStudent);
 
 module.exports = router;

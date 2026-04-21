@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { protect, authorizeRoles } = require("../middleware/authMiddleware");
 const {
   markAttendance,
   markBulkAttendance,
@@ -13,19 +14,21 @@ const {
   getClassWiseReport,
 } = require("../controllers/attendanceController");
 
-router.post("/", markAttendance);
-router.post("/bulk", markBulkAttendance);
-router.get("/", getAttendance);
+router.use(protect);
+
+router.post("/", authorizeRoles("admin", "employee"), markAttendance);
+router.post("/bulk", authorizeRoles("admin", "employee"), markBulkAttendance);
+router.get("/", authorizeRoles("admin", "employee"), getAttendance);
 
 // Reports — must be before /:param routes
-router.get("/student-report", getStudentAttendanceReport);
-router.get("/employee-report", getEmployeeAttendanceReport);
-router.get("/class-report", getClassWiseReport);
-router.get("/summary/:studentId", getAttendanceSummary);
+router.get("/student-report", authorizeRoles("admin", "employee"), getStudentAttendanceReport);
+router.get("/employee-report", authorizeRoles("admin"), getEmployeeAttendanceReport);
+router.get("/class-report", authorizeRoles("admin", "employee"), getClassWiseReport);
+router.get("/summary/:studentId", authorizeRoles("admin", "employee"), getAttendanceSummary);
 
 // Employee attendance
-router.post("/employee", markEmployeeAttendance);
-router.post("/employee/bulk", markBulkEmployeeAttendance);
-router.get("/employee", getEmployeeAttendance);
+router.post("/employee", authorizeRoles("admin"), markEmployeeAttendance);
+router.post("/employee/bulk", authorizeRoles("admin"), markBulkEmployeeAttendance);
+router.get("/employee", authorizeRoles("admin"), getEmployeeAttendance);
 
 module.exports = router;

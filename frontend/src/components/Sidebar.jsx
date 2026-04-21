@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function SchoolIcon() {
   return (
@@ -82,6 +83,15 @@ function EmployeesIcon() {
   );
 }
 
+function ExamIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 3v4M17 3v4M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m9 14 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -92,6 +102,12 @@ function SettingsIcon() {
 }
 
 function Sidebar() {
+  const { user } = useAuth();
+  const role = user?.role || "";
+  const isAdmin = role === "admin";
+  const isEmployee = role === "employee";
+  const isStudent = role === "student";
+  const canAccessOperations = isAdmin || isEmployee;
   const location = useLocation();
   const isStudentsActive = location.pathname.startsWith("/students");
   const isAttendanceActive = location.pathname.startsWith("/attendance");
@@ -100,7 +116,12 @@ function Sidebar() {
   const isEmployeesActive = location.pathname.startsWith("/employees");
   const isFeesActive = location.pathname.startsWith("/fees");
   const isSalaryActive = location.pathname.startsWith("/salary");
+  const isExamsActive = location.pathname.startsWith("/exams");
+  const isClassTestsActive = location.pathname.startsWith("/class-tests");
+  const isHomeworkActive = location.pathname.startsWith("/homework");
+  const isReportsActive = location.pathname.startsWith("/reports");
   const isGeneralSettingsActive = location.pathname.startsWith("/settings");
+  const isStudentPortalActive = location.pathname.startsWith("/student");
   const [studentsOpen, setStudentsOpen] = useState(isStudentsActive);
   const [attendanceOpen, setAttendanceOpen] = useState(isAttendanceActive);
   const [classesOpen, setClassesOpen] = useState(isClassesActive);
@@ -108,11 +129,47 @@ function Sidebar() {
   const [employeesOpen, setEmployeesOpen] = useState(isEmployeesActive);
   const [feesOpen, setFeesOpen] = useState(isFeesActive);
   const [salaryOpen, setSalaryOpen] = useState(isSalaryActive);
+  const [examsOpen, setExamsOpen] = useState(isExamsActive);
+  const [classTestsOpen, setClassTestsOpen] = useState(isClassTestsActive);
+  const [reportsOpen, setReportsOpen] = useState(isReportsActive);
   const [settingsOpen, setSettingsOpen] = useState(isGeneralSettingsActive);
 
-  const navItems = [
-    { path: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
-  ];
+  const navItems = canAccessOperations
+    ? [{ path: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> }]
+    : [];
+
+  if (isStudent) {
+    const studentNavItems = [
+      { path: "/student/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
+      { path: "/student/admission-letter", label: "Admission Letter", icon: <StudentsIcon /> },
+      { path: "/student/fees", label: "Paid Fee Receipt", icon: <FeesIcon /> },
+      { path: "/student/report-card", label: "My Report Card", icon: <ExamIcon /> },
+      { path: "/student/test-results", label: "Test Results", icon: <ExamIcon /> },
+      { path: "/student/exam-results", label: "Exam Result", icon: <ExamIcon /> },
+      { path: "/student/account-settings", label: "Account Settings", icon: <SettingsIcon /> },
+    ];
+
+    return (
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="brand-icon"><SchoolIcon /></div>
+          <div className="brand">Student Portal</div>
+        </div>
+        <nav className="nav-links">
+          {studentNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `nav-link ${(isActive || (isStudentPortalActive && location.pathname === item.path)) ? "active" : ""}`}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    );
+  }
 
   return (
     <aside className="sidebar">
@@ -132,7 +189,6 @@ function Sidebar() {
           </NavLink>
         ))}
 
-        {/* General Settings collapsible group */}
         <div className={`nav-group ${isGeneralSettingsActive ? "nav-group--active" : ""}`}>
           <button
             className="nav-group-header"
@@ -140,42 +196,48 @@ function Sidebar() {
             aria-expanded={settingsOpen}
           >
             <span className="nav-icon"><SettingsIcon /></span>
-            <span className="nav-label">General Settings</span>
-            <span className="nav-group-toggle">{settingsOpen ? "−" : "+"}</span>
+            <span className="nav-label">{isStudent ? "My Account" : "General Settings"}</span>
+            <span className="nav-group-toggle">{settingsOpen ? "-" : "+"}</span>
           </button>
 
           {settingsOpen && (
             <div className="nav-sub-links">
-              <NavLink
-                to="/settings/institute-profile"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Institute Profile
-              </NavLink>
-              <NavLink
-                to="/settings/fees-particular"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Fees Particular
-              </NavLink>
-              <NavLink
-                to="/settings/accounts-for-fees-invoice"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Accounts For Fees Invoice
-              </NavLink>
-              <NavLink
-                to="/settings/rules-and-regulation"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Rules & Regulation
-              </NavLink>
-              <NavLink
-                to="/settings/marks-grading"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Marks Grading
-              </NavLink>
+              {isAdmin && (
+                <>
+                  <NavLink
+                    to="/settings/institute-profile"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Institute Profile
+                  </NavLink>
+                  <NavLink
+                    to="/settings/fees-particular"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Fees Particular
+                  </NavLink>
+                  <NavLink
+                    to="/settings/accounts-for-fees-invoice"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Accounts For Fees Invoice
+                  </NavLink>
+                  <NavLink
+                    to="/settings/marks-grading"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Marks Grading
+                  </NavLink>
+                </>
+              )}
+              {!isStudent && (
+                <NavLink
+                  to="/settings/rules-and-regulation"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Rules & Regulation
+                </NavLink>
+              )}
               <NavLink
                 to="/settings/account-setting"
                 className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
@@ -186,279 +248,413 @@ function Sidebar() {
           )}
         </div>
 
-        {/* Classes collapsible group */}
-        <div className={`nav-group ${isClassesActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setClassesOpen((prev) => !prev)}
-            aria-expanded={classesOpen}
-          >
-            <span className="nav-icon"><ClassesIcon /></span>
-            <span className="nav-label">Classes</span>
-            <span className="nav-group-toggle">{classesOpen ? "−" : "+"}</span>
-          </button>
+        {canAccessOperations && (
+          <div className={`nav-group ${isClassesActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setClassesOpen((prev) => !prev)}
+              aria-expanded={classesOpen}
+            >
+              <span className="nav-icon"><ClassesIcon /></span>
+              <span className="nav-label">Classes</span>
+              <span className="nav-group-toggle">{classesOpen ? "-" : "+"}</span>
+            </button>
 
-          {classesOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/classes"
-                end
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                All Classes
-              </NavLink>
-              <NavLink
-                to="/classes/new"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                New Class
-              </NavLink>
-            </div>
-          )}
-        </div>
+            {classesOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/classes"
+                  end
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  All Classes
+                </NavLink>
+                {isAdmin && (
+                  <NavLink
+                    to="/classes/new"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    New Class
+                  </NavLink>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Subjects collapsible group */}
-        <div className={`nav-group ${isSubjectsActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setSubjectsOpen((prev) => !prev)}
-            aria-expanded={subjectsOpen}
+        {canAccessOperations && (
+          <div className={`nav-group ${isSubjectsActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setSubjectsOpen((prev) => !prev)}
+              aria-expanded={subjectsOpen}
+            >
+              <span className="nav-icon"><SubjectsIcon /></span>
+              <span className="nav-label">Subjects</span>
+              <span className="nav-group-toggle">{subjectsOpen ? "-" : "+"}</span>
+            </button>
+
+            {subjectsOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/subjects/classes-with-subjects"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Classes With Subjects
+                </NavLink>
+                <NavLink
+                  to="/subjects/assign-subjects"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Assign Subjects
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className={`nav-group ${isExamsActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setExamsOpen((prev) => !prev)}
+              aria-expanded={examsOpen}
+            >
+              <span className="nav-icon"><ExamIcon /></span>
+              <span className="nav-label">Exams</span>
+              <span className="nav-group-toggle">{examsOpen ? "-" : "+"}</span>
+            </button>
+
+            {examsOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/exams/create"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Create New Exam
+                </NavLink>
+                <NavLink
+                  to="/exams/marks"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Add / Update Exam Marks
+                </NavLink>
+                <NavLink
+                  to="/exams/result-card"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Result Card
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className={`nav-group ${isReportsActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setReportsOpen((prev) => !prev)}
+              aria-expanded={reportsOpen}
+            >
+              <span className="nav-icon"><ExamIcon /></span>
+              <span className="nav-label">Reports</span>
+              <span className="nav-group-toggle">{reportsOpen ? "-" : "+"}</span>
+            </button>
+
+            {reportsOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/reports/report-card"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Students report Card
+                </NavLink>
+                <NavLink
+                  to="/reports/students-info"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Students info report
+                </NavLink>
+                <NavLink
+                  to="/reports/parents-info"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Parents info report
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className={`nav-group ${isClassTestsActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setClassTestsOpen((prev) => !prev)}
+              aria-expanded={classTestsOpen}
+            >
+              <span className="nav-icon"><ExamIcon /></span>
+              <span className="nav-label">Class Tests</span>
+              <span className="nav-group-toggle">{classTestsOpen ? "-" : "+"}</span>
+            </button>
+
+            {classTestsOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/class-tests/marks"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Manage Test Marks
+                </NavLink>
+                <NavLink
+                  to="/class-tests/results"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Test Result
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
+
+        {canAccessOperations && (
+          <NavLink
+            to="/homework"
+            className={({ isActive }) => `nav-link ${(isActive || isHomeworkActive) ? "active" : ""}`}
           >
             <span className="nav-icon"><SubjectsIcon /></span>
-            <span className="nav-label">Subjects</span>
-            <span className="nav-group-toggle">{subjectsOpen ? "−" : "+"}</span>
-          </button>
+            <span className="nav-label">Homework</span>
+          </NavLink>
+        )}
 
-          {subjectsOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/subjects/classes-with-subjects"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Classes With Subjects
-              </NavLink>
-              <NavLink
-                to="/subjects/assign-subjects"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Assign Subjects
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {canAccessOperations && (
+          <div className={`nav-group ${isStudentsActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setStudentsOpen((prev) => !prev)}
+              aria-expanded={studentsOpen}
+            >
+              <span className="nav-icon"><StudentsIcon /></span>
+              <span className="nav-label">Students</span>
+              <span className="nav-group-toggle">{studentsOpen ? "-" : "+"}</span>
+            </button>
 
-        {/* Students collapsible group */}
-        <div className={`nav-group ${isStudentsActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setStudentsOpen((prev) => !prev)}
-            aria-expanded={studentsOpen}
-          >
-            <span className="nav-icon"><StudentsIcon /></span>
-            <span className="nav-label">Students</span>
-            <span className="nav-group-toggle">{studentsOpen ? "−" : "+"}</span>
-          </button>
+            {studentsOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/students"
+                  end
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  All Students
+                </NavLink>
+                {isAdmin && (
+                  <NavLink
+                    to="/students/new"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Add New
+                  </NavLink>
+                )}
+                <NavLink
+                  to="/students/id-cards"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Student ID Cards
+                </NavLink>
+                <NavLink
+                  to="/students/admission-letter"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Admission Letter
+                </NavLink>
+                {isAdmin && (
+                  <>
+                    <NavLink
+                      to="/students/promote"
+                      className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                    >
+                      Promote Students
+                    </NavLink>
+                    <NavLink
+                      to="/students/manage-login"
+                      className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                    >
+                      Manage Login
+                    </NavLink>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
-          {studentsOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/students"
-                end
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                All Students
-              </NavLink>
-              <NavLink
-                to="/students/new"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Add New
-              </NavLink>
-              <NavLink
-                to="/students/id-cards"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Student ID Cards
-              </NavLink>
-              <NavLink
-                to="/students/admission-letter"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Admission Letter
-              </NavLink>
-              <NavLink
-                to="/students/promote"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Promote Students
-              </NavLink>
-              <NavLink
-                to="/students/manage-login"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Manage Login
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {isAdmin && (
+          <div className={`nav-group ${isEmployeesActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setEmployeesOpen((prev) => !prev)}
+              aria-expanded={employeesOpen}
+            >
+              <span className="nav-icon"><EmployeesIcon /></span>
+              <span className="nav-label">Employees</span>
+              <span className="nav-group-toggle">{employeesOpen ? "-" : "+"}</span>
+            </button>
 
-        {/* Employees collapsible group */}
-        <div className={`nav-group ${isEmployeesActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setEmployeesOpen((prev) => !prev)}
-            aria-expanded={employeesOpen}
-          >
-            <span className="nav-icon"><EmployeesIcon /></span>
-            <span className="nav-label">Employees</span>
-            <span className="nav-group-toggle">{employeesOpen ? "−" : "+"}</span>
-          </button>
+            {employeesOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/employees"
+                  end
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  All Employees
+                </NavLink>
+                <NavLink
+                  to="/employees/new"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Add New
+                </NavLink>
+                <NavLink
+                  to="/employees/job-letter"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Job Letter
+                </NavLink>
+                <NavLink
+                  to="/employees/manage-login"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Manage Login
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
 
-          {employeesOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/employees"
-                end
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                All Employees
-              </NavLink>
-              <NavLink
-                to="/employees/new"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Add New
-              </NavLink>
-              <NavLink
-                to="/employees/job-letter"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Job Letter
-              </NavLink>
-              <NavLink
-                to="/employees/manage-login"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Manage Login
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {canAccessOperations && (
+          <div className={`nav-group ${isFeesActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setFeesOpen((prev) => !prev)}
+              aria-expanded={feesOpen}
+            >
+              <span className="nav-icon"><FeesIcon /></span>
+              <span className="nav-label">Fees</span>
+              <span className="nav-group-toggle">{feesOpen ? "-" : "+"}</span>
+            </button>
 
-        {/* Fees collapsible group */}
-        <div className={`nav-group ${isFeesActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setFeesOpen((prev) => !prev)}
-            aria-expanded={feesOpen}
-          >
-            <span className="nav-icon"><FeesIcon /></span>
-            <span className="nav-label">Fees</span>
-            <span className="nav-group-toggle">{feesOpen ? "−" : "+"}</span>
-          </button>
+            {feesOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/fees"
+                  end
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Generate Fees Invoice
+                </NavLink>
+                <NavLink
+                  to="/fees/collect"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Collect Fees
+                </NavLink>
+                <NavLink
+                  to="/fees/paid-slip"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Fees Paid Slip
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
 
-          {feesOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/fees"
-                end
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Generate Fees Invoice
-              </NavLink>
-              <NavLink
-                to="/fees/collect"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Collect Fees
-              </NavLink>
-              <NavLink
-                to="/fees/paid-slip"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Fees Paid Slip
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {isAdmin && (
+          <div className={`nav-group ${isSalaryActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setSalaryOpen((prev) => !prev)}
+              aria-expanded={salaryOpen}
+            >
+              <span className="nav-icon"><SalaryIcon /></span>
+              <span className="nav-label">Salary</span>
+              <span className="nav-group-toggle">{salaryOpen ? "-" : "+"}</span>
+            </button>
 
-        {/* Salary collapsible group */}
-        <div className={`nav-group ${isSalaryActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setSalaryOpen((prev) => !prev)}
-            aria-expanded={salaryOpen}
-          >
-            <span className="nav-icon"><SalaryIcon /></span>
-            <span className="nav-label">Salary</span>
-            <span className="nav-group-toggle">{salaryOpen ? "−" : "+"}</span>
-          </button>
+            {salaryOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/salary/pay"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Pay Salary
+                </NavLink>
+                <NavLink
+                  to="/salary/paid-slip"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Salary Paid Slip
+                </NavLink>
+              </div>
+            )}
+          </div>
+        )}
 
-          {salaryOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/salary/pay"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Pay Salary
-              </NavLink>
-              <NavLink
-                to="/salary/paid-slip"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Salary Paid Slip
-              </NavLink>
-            </div>
-          )}
-        </div>
+        {canAccessOperations && (
+          <div className={`nav-group ${isAttendanceActive ? "nav-group--active" : ""}`}>
+            <button
+              className="nav-group-header"
+              onClick={() => setAttendanceOpen((prev) => !prev)}
+              aria-expanded={attendanceOpen}
+            >
+              <span className="nav-icon"><AttendanceIcon /></span>
+              <span className="nav-label">Attendance</span>
+              <span className="nav-group-toggle">{attendanceOpen ? "-" : "+"}</span>
+            </button>
 
-        {/* Attendance collapsible group */}
-        <div className={`nav-group ${isAttendanceActive ? "nav-group--active" : ""}`}>
-          <button
-            className="nav-group-header"
-            onClick={() => setAttendanceOpen((prev) => !prev)}
-            aria-expanded={attendanceOpen}
-          >
-            <span className="nav-icon"><AttendanceIcon /></span>
-            <span className="nav-label">Attendance</span>
-            <span className="nav-group-toggle">{attendanceOpen ? "−" : "+"}</span>
-          </button>
-
-          {attendanceOpen && (
-            <div className="nav-sub-links">
-              <NavLink
-                to="/attendance/students"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Students Attendance
-              </NavLink>
-              <NavLink
-                to="/attendance/employees"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Employees Attendance
-              </NavLink>
-              <NavLink
-                to="/attendance/class-report"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Class wise Report
-              </NavLink>
-              <NavLink
-                to="/attendance/student-report"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Students Attendance Report
-              </NavLink>
-              <NavLink
-                to="/attendance/employee-report"
-                className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
-              >
-                Employees Attendance Report
-              </NavLink>
-            </div>
-          )}
-        </div>
+            {attendanceOpen && (
+              <div className="nav-sub-links">
+                <NavLink
+                  to="/attendance/students"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Students Attendance
+                </NavLink>
+                {isAdmin && (
+                  <NavLink
+                    to="/attendance/employees"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Employees Attendance
+                  </NavLink>
+                )}
+                <NavLink
+                  to="/attendance/class-report"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Class wise Report
+                </NavLink>
+                <NavLink
+                  to="/attendance/student-report"
+                  className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                >
+                  Students Attendance Report
+                </NavLink>
+                {isAdmin && (
+                  <NavLink
+                    to="/attendance/employee-report"
+                    className={({ isActive }) => `nav-sub-link ${isActive ? "active" : ""}`}
+                  >
+                    Employees Attendance Report
+                  </NavLink>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
     </aside>
   );

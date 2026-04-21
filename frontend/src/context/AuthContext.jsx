@@ -52,6 +52,7 @@ export function AuthProvider({ children }) {
     const res = await api.post("/auth/login", { identifier, password, role });
     setToken(res.data.token);
     setUser(res.data.user);
+    return res.data.user;
   };
 
   const logout = () => {
@@ -59,8 +60,12 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateUser = (nextUser) => {
+    setUser(nextUser);
+  };
+
   const value = useMemo(
-    () => ({ token, user, loading, isAuthenticated: Boolean(token), login, logout }),
+    () => ({ token, user, loading, isAuthenticated: Boolean(token), login, logout, updateUser }),
     [token, user, loading]
   );
 
